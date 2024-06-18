@@ -3,33 +3,43 @@ package config
 import (
 	"context"
 	"log"
-	"time"
-
+	"fmt"
+	"os"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var MongoClient *mongo.Client
+var (
+    mongoClient *mongo.Client
+    dbName      = "shop_db" // Your MongoDB database name
+)
 
-func InitMongoDB(uri string) {
+func ConnectToDB()  *mongo.Client {
+	uri := "mongodb://localhost:27017"
+
 	clientOptions := options.Client().ApplyURI(uri)
+
 	client, err := mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	err = client.Ping(context.TODO(), nil)
+    if err != nil {
+        log.Fatal(err)
+		os.Exit(1)
+    }
 
-	err = client.Ping(ctx, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	MongoClient = client
-	log.Println("Connected to MongoDB!")
+	fmt.Println("Connected to MongoDB!")
+	mongoClient = client
+	return client
 }
 
-func GetCollection(database, collection string) *mongo.Collection {
-	return MongoClient.Database(database).Collection(collection)
+// GetProductsCollection returns the collection object for the "products" collection
+func GetProductsCollection() *mongo.Collection {
+    if mongoClient == nil {
+        ConnectToDB() // Ensure MongoDB connection is established
+    }
+
+    return mongoClient.Database(dbName).Collection("products")
 }
