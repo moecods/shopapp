@@ -69,15 +69,3 @@ func (h *ProductHandler) AddProductHandler(w http.ResponseWriter, r *http.Reques
         http.Error(w, "Failed to encode response", http.StatusInternalServerError)
     }
 }
-
-
-// func updateProductHandler(w http.ResponseWriter, r *http.Request) {
-//     if r.Method != http.MethodPut {
-//         http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-//         return
-//     }
-
-//     var product Product
-
-//     productRepo.Find
-// }
