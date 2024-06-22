@@ -37,7 +37,8 @@ func main() {
 
 	http.HandleFunc("/products/all", recoverHandler(productHandler.GetProductsHandler))
 	http.HandleFunc("/products/add", recoverHandler(productHandler.AddProductHandler))
-	
+	http.HandleFunc("/products/update", recoverHandler(productHandler.UpdateProductHandler))
+
 	log.Println("Starting server on :8020")
 	err := http.ListenAndServe(":8020", nil)
 	if err != nil {

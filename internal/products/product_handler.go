@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ProductHandler struct {
@@ -68,4 +70,33 @@ func (h *ProductHandler) AddProductHandler(w http.ResponseWriter, r *http.Reques
         log.Printf("Failed to encode response: %v", err)
         http.Error(w, "Failed to encode response", http.StatusInternalServerError)
     }
+}
+
+// UpdateProductHandler handles updating an existing product.
+func (h *ProductHandler) UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPut {
+        http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+        return
+    }
+
+    var product Product
+    if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+
+    id, err := primitive.ObjectIDFromHex(product.ID.Hex())
+ 
+    if err != nil {
+        http.Error(w, "Invalid product ID", http.StatusBadRequest)
+        return
+    }
+
+    if err := h.ProductRepo.UpdateProduct(id, &product); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(product)
 }
